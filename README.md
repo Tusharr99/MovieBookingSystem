@@ -79,5 +79,3 @@ MovieBookingSystem: A full-stack app for movie ticket booking & cinema managemen
   - `GET /api/theatres`: List theaters.
   - `GET /api/screenings`: List screenings.
 
-## License
-[MIT License](LICENSE)
