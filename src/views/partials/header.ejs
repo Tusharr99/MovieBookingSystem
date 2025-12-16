@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title || 'Movie Booking' %></title>
+  <link rel="stylesheet" href="/tailwind.css" />
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <header class="bg-slate-900 border-b border-slate-800">
+    <div class="max-w-6xl mx-auto flex items-center justify-between px-4 py-4">
+      <a href="/" class="text-lg font-semibold text-emerald-400">MovieBooking</a>
+      <nav class="flex items-center space-x-4 text-sm text-slate-200">
+        <a class="hover:text-emerald-300" href="/">Home</a>
+        <a class="hover:text-emerald-300" href="/book">Book</a>
+        <% if (typeof user !== 'undefined' && user) { %>
+          <a class="hover:text-emerald-300" href="/bookings">My Bookings</a>
+        <% } %>
+        <% if (typeof user !== 'undefined' && user && user.role === 'admin') { %>
+          <a class="hover:text-emerald-300" href="/admin">Admin</a>
+        <% } %>
+        <% if (typeof user !== 'undefined' && user) { %>
+          <button
+            type="button"
+            id="logoutBtn"
+            class="px-3 py-1 rounded border border-slate-600 hover:border-emerald-400 hover:text-emerald-300"
+          >
+            Logout
+          </button>
+        <% } else { %>
+          <a class="hover:text-emerald-300" href="/login">Login</a>
+          <a class="hover:text-emerald-300" href="/register">Register</a>
+        <% } %>
+      </nav>
+    </div>
+  </header>
+  <main class="max-w-6xl mx-auto px-4 py-8">
+

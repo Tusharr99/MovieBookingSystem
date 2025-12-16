@@ -1,23 +1,25 @@
 # Node.js
 node_modules/
-npm-debug.log
-yarn-error.log
-
-# Environment variables
-backend/.env
-
-# Logs
+npm-debug.log*
+yarn-error.log*
 *.log
-logs/
 
-# Database
-*.sql
-*.sqlite
+# Environment variables / secrets
+.env
 
 # Build output
-frontend/dist
-frontend/build
+dist/
+build/
 
-# IDE files
+# Tailwind generated files (if any)
+src/public/tailwind.css
+
+# OS / Editor
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
+
+# Coverage / tooling
+coverage/
+.cursor

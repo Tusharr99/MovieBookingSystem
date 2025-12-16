@@ -1,0 +1,158 @@
+<%- include('../partials/header', { title, user }) %>
+<section class="space-y-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <p class="text-sm uppercase tracking-wide text-emerald-300">Book</p>
+      <h1 class="text-2xl font-semibold">Choose your show</h1>
+      <p class="text-sm text-slate-400"><%= movieId ? 'Select a showtime for this movie' : 'Pick any screening, then choose seats.' %></p>
+    </div>
+  </div>
+
+  <% if (!screenings || !screenings.length) { %>
+    <div class="bg-slate-900 border border-slate-800 rounded p-4 text-slate-300">
+      No screenings available yet. Please check back later.
+    </div>
+  <% } else { %>
+    <div class="space-y-3">
+      <p class="text-sm text-slate-400">Select a showtime</p>
+      <div class="space-y-2">
+        <% screenings.forEach(s => { %>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-slate-900 border border-slate-800 rounded p-3">
+            <div>
+              <p class="text-sm text-slate-300"><%= s.movie?.title %></p>
+              <p class="text-xs text-slate-400"><%= s.theatre?.name %> — <%= s.theatre?.location %></p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                class="showtime-btn px-3 py-1 rounded border border-slate-700 text-sm text-emerald-200 hover:border-emerald-400"
+                data-screening="<%= s._id %>"
+                data-price="<%= s.price %>"
+                data-booked='<%= JSON.stringify(s.seatsBooked || []) %>'
+                data-label="<%= s.movie?.title %> — <%= new Date(s.startTime).toLocaleString() %> — <%= s.theatre?.name %>"
+              >
+                <%= new Date(s.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+              </button>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <form id="bookingSetupForm" action="/payment" method="POST" class="space-y-4">
+      <input type="hidden" id="screeningSelect" name="screeningId" required />
+      <div id="seatmap" class="bg-slate-900 border border-slate-800 rounded p-4 space-y-4 shadow shadow-emerald-900/30">
+        <div class="flex items-center justify-between">
+          <div class="space-y-1">
+            <h3 class="text-sm font-semibold text-emerald-200">Select seats</h3>
+            <p id="selectionLabel" class="text-xs text-slate-500"></p>
+          </div>
+          <span id="pricePerSeat" class="text-xs text-slate-400"></span>
+        </div>
+        <div id="seatsGrid" class="space-y-2 text-center"></div>
+        <input type="hidden" name="seatsCsv" id="seatsCsv" />
+        <div class="text-sm text-slate-300">
+          Selected: <span id="selectedSeats" class="text-emerald-300">None</span>
+          <span id="totalAmount" class="ml-2 text-emerald-200"></span>
+        </div>
+        <p class="text-xs text-slate-500">Booked seats are disabled. Click a showtime above to load availability.</p>
+      </div>
+
+      <% if (!user) { %>
+        <div class="bg-amber-900/40 border border-amber-700 text-amber-100 rounded p-3 text-sm">
+          Please <a href="/login" class="text-emerald-300 hover:text-emerald-200">log in</a> to continue to payment and complete your booking.
+        </div>
+      <% } %>
+
+      <button
+        type="submit"
+        id="proceedBtn"
+        class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled
+      >
+        Continue to payment
+      </button>
+    </form>
+  <% } %>
+</section>
+
+<script>
+  const seatRows = <%- JSON.stringify(seatRows) %>;
+  const seatsPerRow = <%= seatsPerRow %>;
+  const seatsGrid = document.getElementById('seatsGrid');
+  const screeningSelect = document.getElementById('screeningSelect');
+  const selectedSeatsEl = document.getElementById('selectedSeats');
+  const totalAmountEl = document.getElementById('totalAmount');
+  const pricePerSeatEl = document.getElementById('pricePerSeat');
+  const seatsCsvInput = document.getElementById('seatsCsv');
+  const proceedBtn = document.getElementById('proceedBtn');
+  const selectionLabel = document.getElementById('selectionLabel');
+
+  let selectedSeats = new Set();
+  let bookedSeats = new Set();
+  let price = 0;
+
+  const renderSeats = () => {
+    seatsGrid.innerHTML = '';
+    seatRows.forEach((row) => {
+      const rowWrap = document.createElement('div');
+      rowWrap.className = 'flex justify-center gap-2';
+      for (let i = 1; i <= seatsPerRow; i++) {
+        const seatId = row + i;
+        const btn = document.createElement('button');
+        const isBooked = bookedSeats.has(seatId);
+        const isSelected = selectedSeats.has(seatId);
+        btn.type = 'button';
+        btn.textContent = seatId;
+        btn.className = [
+          'text-xs px-2 py-2 rounded border transition',
+          isBooked
+            ? 'border-slate-700 bg-slate-800 text-slate-500 cursor-not-allowed'
+            : isSelected
+              ? 'border-emerald-400 bg-emerald-500/20 text-emerald-200'
+              : 'border-slate-700 bg-slate-900 hover:border-emerald-400 hover:text-emerald-200'
+        ].join(' ');
+        btn.disabled = isBooked;
+        btn.addEventListener('click', () => {
+          if (selectedSeats.has(seatId)) {
+            selectedSeats.delete(seatId);
+          } else {
+            selectedSeats.add(seatId);
+          }
+          updateSummary();
+          renderSeats();
+        });
+        rowWrap.appendChild(btn);
+      }
+      seatsGrid.appendChild(rowWrap);
+    });
+  };
+
+  const updateSummary = () => {
+    const seatsArr = Array.from(selectedSeats);
+    selectedSeatsEl.textContent = seatsArr.length ? seatsArr.join(', ') : 'None';
+    const total = seatsArr.length * price;
+    totalAmountEl.textContent = seatsArr.length ? `Total: ${total}` : '';
+    seatsCsvInput.value = seatsArr.join(',');
+  };
+
+  const selectShowtime = (btn) => {
+    const screeningId = btn.dataset.screening;
+    screeningSelect.value = screeningId;
+    price = Number(btn.dataset.price || 0);
+    pricePerSeatEl.textContent = price ? `Price per seat: ${price}` : '';
+    bookedSeats = new Set(JSON.parse(btn.dataset.booked || '[]'));
+    selectedSeats = new Set();
+    selectionLabel.textContent = btn.dataset.label || '';
+    updateSummary();
+    renderSeats();
+    proceedBtn.disabled = false;
+    document.getElementById('seatmap').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  document.querySelectorAll('.showtime-btn').forEach((btn) => {
+    btn.addEventListener('click', () => selectShowtime(btn));
+  });
+</script>
+<%- include('../partials/footer') %>
+

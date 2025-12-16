@@ -59,4 +59,6 @@ Visit `http://localhost:5000`
 
 ## Notes
 - JWT is stored in an httpOnly cookie; admin routes are protected by role checks.
+
 - Seat booking does optimistic checks in Mongo; for strict guarantees you can add transactions or per-seat documents.
+
