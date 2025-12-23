@@ -1,64 +1,81 @@
-# MovieBookingSystem (Node.js + Express + MongoDB + EJS + Tailwind)
+# MovieBookingSystem
 
-Full-stack movie ticket booking app with JWT-based auth, admin dashboard, BookMyShow-style booking flow, and reviews.
-
-## Stack
-- **Backend**: Node.js, Express, MongoDB (Mongoose), JWT, bcrypt, cookie-based auth
-- **Views**: EJS server-rendered pages, Tailwind CSS
-- **Auth**: User/admin roles with httpOnly JWT cookie, role-guarded admin routes
+MovieBookingSystem: A full-stack app for movie ticket booking & cinema management. Built with React, Node.js, Express, MySQL. Features JWT auth, Admin Dashboard for movies/theaters, and responsive UI with Tailwind CSS.
 
 ## Features
-- **Movie discovery**: Home page with search, movie cards linking to detailed movie pages
-- **Movie detail page**: Poster, description, duration, genres, status, showtimes listing, Book tickets CTA
-- **Booking flow**: Per-movie booking page with theatre/time selection, seat map (booked seats disabled), and payment-style confirmation
-- **Payments & tickets**: Mock payment page that creates bookings and redirects to a ticket view with payment reference
-- **User area**: “My Bookings” page showing booking history and deep links to tickets/booking again
-- **Admin dashboard**: Manage movies, theatres, screenings; view users, recent reviews, and per-movie rating analytics
-- **Reviews & ratings**: Users can rate and review movies; movie pages show average rating and review list
+- **User Authentication**: Secure login/registration for users and admins using JWT and bcrypt.
+- **Admin Dashboard**: Manage movies, theaters, and screenings with RESTful APIs.
+- **Movie Booking**: Browse movies, select screenings, and book tickets with a responsive UI.
+- **Database**: MySQL with Sequelize ORM for efficient data management.
 
-## Quick start
-1) Install deps
-```bash
-npm install
-```
-2) Configure environment  
-Create a `.env` with:
-```bash
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/movie_booking
-JWT_SECRET=supersecretjwt
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=changeme
-```
-3) Build CSS (one-time for dev)
-```bash
-npm run build:css
-```
-4) Run server
-```bash
-npm run dev
-```
-Visit `http://localhost:5000`
+## Tech Stack
+- **Frontend**: React, React Router, Axios, Tailwind CSS
+- **Backend**: Node.js, Express, Sequelize, JWT, bcrypt
+- **Database**: MySQL
+- **Tools**: Git, VS Code, npm, PowerShell
 
-## Key API routes
-- **Auth**: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`
-- **Movies**: `GET /api/movies`, `POST/PUT/DELETE /api/movies` (admin)
-- **Theatres**: `GET /api/theatres`, `POST/PUT/DELETE /api/theatres` (admin)
-- **Screenings**: `GET /api/screenings`, `POST/PUT/DELETE /api/screenings` (admin)
-- **Bookings**: `GET /api/bookings` (user/admin filtered), `POST /api/bookings`
-- **Reviews**: `GET /api/reviews?movie=:movieId`, `POST /api/reviews` (auth)
+## Installation
 
-## Views overview
-- `GET /`: Home (movies + search)
-- `GET /movies/:id`: Movie detail + reviews and Book tickets CTA
-- `GET /book` and `GET /book/:movieId`: Showtime + seat selection
-- `POST /payment`: Payment-style step before booking confirmation
-- `GET /ticket/:id`: Ticket view
-- `GET /bookings`: My Bookings (requires login)
-- `GET /admin`: Admin dashboard (requires admin)
+### Prerequisites
+- Node.js (v18.x or higher)
+- MySQL (8.x or higher)
+- Git
 
-## Notes
-- JWT is stored in an httpOnly cookie; admin routes are protected by role checks.
+### Setup
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Tusharr99/MovieBookingSystem.git
+   cd MovieBookingSystem
+   ```
 
-- Seat booking does optimistic checks in Mongo; for strict guarantees you can add transactions or per-seat documents.
+2. **Backend Setup**:
+   ```bash
+   cd backend
+   npm install
+   ```
+   Create a `.env` file in `backend/`:
+   ```
+   PORT=5000
+   DB_HOST=localhost
+   DB_USER=movie_user
+   DB_PASSWORD=your_password
+   DB_NAME=movie_booking
+   JWT_SECRET=your_jwt_secret
+   ```
+   Set up MySQL:
+   ```bash
+   mysql -u root -p
+   CREATE DATABASE movie_booking;
+   CREATE USER 'movie_user'@'localhost' IDENTIFIED BY 'your_password';
+   GRANT ALL PRIVILEGES ON movie_booking.* TO 'movie_user'@'localhost';
+   EXIT;
+   ```
+   Run migrations (if using Sequelize):
+   ```bash
+   npx sequelize db:migrate
+   ```
+   Start the backend:
+   ```bash
+   npm start
+   ```
+
+3. **Frontend Setup**:
+   ```bash
+   cd ../frontend
+   npm install
+   npm start
+   ```
+
+4. **Access the Application**:
+   - Frontend: `http://localhost:3000`
+   - Backend: `http://localhost:5000`
+
+## Usage
+- **Admin**: Log in with `admin@gmail.com` and `admin123` to manage movies, theaters, and screenings.
+- **Users**: Register/login to browse movies and book tickets.
+- **Key Endpoints**:
+  - `POST /api/auth/login`: Authenticate users/admins.
+  - `POST /api/admin/movies`: Add movies (admin only).
+  - `GET /api/theatres`: List theaters.
+  - `GET /api/screenings`: List screenings.
 
